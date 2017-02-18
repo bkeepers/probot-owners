@@ -12,7 +12,7 @@
   "dependencies": {
     "bunyan": "^1.8.5",
     "dotenv": "^4.0.0",
-    "github": "^6.0.4",
+    "github": "^8.2.1",
     "github-webhook-handler": "^0.6.0",
     "jsonwebtoken": "^7.2.1",
     "owners-file": "https://github.com/bkeepers/owners-node.git"
