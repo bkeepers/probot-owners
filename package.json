@@ -4,17 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "probot ./index.js",
     "test": "mocha && xo"
   },
   "author": "Brandon Keepers",
   "license": "ISC",
   "dependencies": {
-    "bunyan": "^1.8.5",
-    "dotenv": "^4.0.0",
-    "github": "^8.2.1",
-    "github-webhook-handler": "^0.6.0",
-    "jsonwebtoken": "^7.2.1",
+    "probot": "github:probot/probot",
     "owners-file": "https://github.com/bkeepers/owners-node.git"
   },
   "devDependencies": {

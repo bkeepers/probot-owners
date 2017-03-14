@@ -1,3 +1,8 @@
-const Server = require('./lib/server.js');
+const ownerNotifier = require('./lib/owner-notifier');
 
-new Server().start();
+module.exports = robot => {
+  robot.on('pull_request', async event => {
+    const github = await robot.auth(event.payload.installation.id);
+    return ownerNotifier(github, event);
+  });
+}
