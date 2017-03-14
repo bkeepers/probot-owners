@@ -1,4 +1,0 @@
-repository:
-  name: github-owners
-  description: @mention maintainers in Pull Requests based on contents of the OWNERS file
-  has_wiki: false
