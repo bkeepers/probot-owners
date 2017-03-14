@@ -5,4 +5,4 @@ module.exports = robot => {
     const github = await robot.auth(event.payload.installation.id);
     return ownerNotifier(github, event);
   });
-}
+};

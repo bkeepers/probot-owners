@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "probot ./index.js",
-    "test": "mocha && xo"
+    "test": "xo"
   },
   "author": "Brandon Keepers",
   "license": "ISC",
@@ -14,23 +14,11 @@
     "owners-file": "https://github.com/bkeepers/owners-node.git"
   },
   "devDependencies": {
-    "expect": "^1.20.2",
-    "mocha": "^3.0.2",
     "xo": "^0.16.0"
   },
   "xo": {
     "esnext": true,
-    "space": true,
-    "rules": {
-      "camelcase": 1,
-      "no-else-return": 0,
-      "key-spacing": 0
-    },
-    "ignores": [],
-    "envs": [
-      "node",
-      "mocha"
-    ]
+    "space": true
   },
   "engines": {
     "node": "~7.7.0"
