@@ -1,6 +1,6 @@
-# GitHub OWNERS
+# Probot: OWNERS
 
-@mention maintainers in Pull Requests based on contents of the [OWNERS](https://github.com/bkeepers/owners) file.
+> a GitHub Integration built with [Probot](https://github.com/probot/probot) that @mentions maintainers in Pull Requests based on contents of the [OWNERS](https://github.com/bkeepers/owners) file.
 
 ## Usage
 
