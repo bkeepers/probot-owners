@@ -213,5 +213,16 @@ describe('OwnerNotifier', () => {
 
       expect(pings.length).toEqual(0);
     });
+
+    it('only includes one copy of any name', async () => {
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
+        createComment(PROBOT_USER_ID, '/cc @manny @manny'),
+        createComment(PROBOT_USER_ID, '/cc @manny')
+      ]));
+
+      const pings = await notifier.getPings();
+
+      expect(pings.length).toEqual(1);
+    });
   });
 });
