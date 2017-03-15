@@ -3,6 +3,15 @@ const expect = require('expect');
 const Changes = require('../lib/changes');
 const OwnerNotifier = require('../lib/owner-notifier');
 
+function createComment(userId, body) {
+  return {
+    body,
+    user: {
+      id: userId
+    }
+  };
+}
+
 describe('OwnerNotifier', () => {
   const BASE_SHA = '1234567890abcdef1234567890abcdef12345678';
   const HEAD_SHA = '234567890abcdef1234567890abcdef123456789';
@@ -152,30 +161,10 @@ describe('OwnerNotifier', () => {
       github = {
         issues: {
           getComments: expect.createSpy().andReturn(Promise.resolve([
-            {
-              body: '/cc @manny',
-              user: {
-                id: PROBOT_USER_ID
-              }
-            },
-            {
-              body: '/cc @moe',
-              user: {
-                id: OTHER_USER_ID
-              }
-            },
-            {
-              body: '@jack',
-              user: {
-                id: PROBOT_USER_ID
-              }
-            },
-            {
-              body: 'jack',
-              user: {
-                id: PROBOT_USER_ID
-              }
-            }
+            createComment(PROBOT_USER_ID, '/cc @manny'),
+            createComment(OTHER_USER_ID, '/cc @moe'),
+            createComment(PROBOT_USER_ID, '@jack'),
+            createComment(PROBOT_USER_ID, 'jack')
           ]))
         },
         users: {
