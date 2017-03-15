@@ -159,14 +159,7 @@ describe('OwnerNotifier', () => {
       event.payload.number = ISSUE_NUMBER;
 
       github = {
-        issues: {
-          getComments: expect.createSpy().andReturn(Promise.resolve([
-            createComment(PROBOT_USER_ID, '/cc @manny'),
-            createComment(OTHER_USER_ID, '/cc @moe'),
-            createComment(PROBOT_USER_ID, '@jack'),
-            createComment(PROBOT_USER_ID, 'jack')
-          ]))
-        },
+        issues: {},
         users: {
           get: expect.createSpy().andReturn(Promise.resolve({
             id: PROBOT_USER_ID
@@ -177,11 +170,48 @@ describe('OwnerNotifier', () => {
       notifier = new OwnerNotifier(github, event);
     });
 
-    it('returns only manny as having been pinged before', async () => {
+    it('recognizes a properly formed comment from the PROBOT_USER_ID', async () => {
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
+        createComment(PROBOT_USER_ID, '/cc @manny')
+      ]));
+
       const pings = await notifier.getPings();
 
       expect(pings.length).toEqual(1);
       expect(pings).toInclude('@manny');
+    });
+
+    it('recognizes multiple pings in a single comment from the PROBOT_USER_ID', async () => {
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
+        createComment(PROBOT_USER_ID, '/cc @manny @moe @jack')
+      ]));
+
+      const pings = await notifier.getPings();
+
+      expect(pings.length).toEqual(3);
+      expect(pings).toInclude('@manny');
+      expect(pings).toInclude('@moe');
+      expect(pings).toInclude('@jack');
+    });
+
+    it('rejects pings from other user IDs', async () => {
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
+        createComment(OTHER_USER_ID, '/cc @manny @moe @jack')
+      ]));
+
+      const pings = await notifier.getPings();
+
+      expect(pings.length).toEqual(0);
+    });
+
+    it('rejects pings that are not formatted correctly', async () => {
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
+        createComment(OTHER_USER_ID, '@manny @moe @jack')
+      ]));
+
+      const pings = await notifier.getPings();
+
+      expect(pings.length).toEqual(0);
     });
   });
 });
