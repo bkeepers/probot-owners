@@ -154,7 +154,7 @@ describe('OwnerNotifier', () => {
     });
   });
 
-  describe('getPings', () => {
+  describe('getAlreadyPingedOwners', () => {
     beforeEach(() => {
       event.payload.number = ISSUE_NUMBER;
 
@@ -175,7 +175,7 @@ describe('OwnerNotifier', () => {
         createComment(PROBOT_USER_ID, '/cc @manny')
       ]));
 
-      const pings = await notifier.getPings();
+      const pings = await notifier.getAlreadyPingedOwners();
 
       expect(pings.length).toEqual(1);
       expect(pings).toInclude('@manny');
@@ -186,7 +186,7 @@ describe('OwnerNotifier', () => {
         createComment(PROBOT_USER_ID, '/cc @manny @moe @jack')
       ]));
 
-      const pings = await notifier.getPings();
+      const pings = await notifier.getAlreadyPingedOwners();
 
       expect(pings.length).toEqual(3);
       expect(pings).toInclude('@manny');
@@ -199,7 +199,7 @@ describe('OwnerNotifier', () => {
         createComment(OTHER_USER_ID, '/cc @manny @moe @jack')
       ]));
 
-      const pings = await notifier.getPings();
+      const pings = await notifier.getAlreadyPingedOwners();
 
       expect(pings.length).toEqual(0);
     });
@@ -209,7 +209,7 @@ describe('OwnerNotifier', () => {
         createComment(OTHER_USER_ID, '@manny @moe @jack')
       ]));
 
-      const pings = await notifier.getPings();
+      const pings = await notifier.getAlreadyPingedOwners();
 
       expect(pings.length).toEqual(0);
     });
@@ -220,7 +220,7 @@ describe('OwnerNotifier', () => {
         createComment(PROBOT_USER_ID, '/cc @manny')
       ]));
 
-      const pings = await notifier.getPings();
+      const pings = await notifier.getAlreadyPingedOwners();
 
       expect(pings.length).toEqual(1);
     });
