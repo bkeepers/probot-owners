@@ -3,10 +3,13 @@ const expect = require('expect');
 const Changes = require('../lib/changes');
 const OwnerNotifier = require('../lib/owner-notifier');
 
-const BASE_SHA = '1234567890abcdef1234567890abcdef12345678';
-const HEAD_SHA = '234567890abcdef1234567890abcdef123456789';
-
 describe('OwnerNotifier', () => {
+  const BASE_SHA = '1234567890abcdef1234567890abcdef12345678';
+  const HEAD_SHA = '234567890abcdef1234567890abcdef123456789';
+  const ISSUE_NUMBER = 42;
+  const PROBOT_USER_ID = 17;
+  const OTHER_USER_ID = 23;
+
   let event;
   let github;
   let notifier;
@@ -41,7 +44,7 @@ describe('OwnerNotifier', () => {
       github = {
         repos: {
           getContent: expect.createSpy().andReturn(Promise.resolve({
-            content: new Buffer('manny\nmoe\njack').toString('base64')
+            content: new Buffer('@manny\n@moe\n@jack').toString('base64')
           }))
         }
       };
@@ -113,7 +116,7 @@ describe('OwnerNotifier', () => {
 
   describe('comment', () => {
     beforeEach(() => {
-      event.payload.number = 42;
+      event.payload.number = ISSUE_NUMBER;
 
       github = {
         issues: {
@@ -127,18 +130,69 @@ describe('OwnerNotifier', () => {
     it('returns successfully', async () => {
       await notifier.comment({
         owners: [
-          'manny',
-          'moe',
-          'jack'
+          '@manny',
+          '@moe',
+          '@jack'
         ]
       });
 
       expect(github.issues.createComment).toHaveBeenCalledWith({
         owner: 'foo',
         repo: 'bar',
-        number: 42,
-        body: '/cc manny moe jack'
+        number: ISSUE_NUMBER,
+        body: '/cc @manny @moe @jack'
       });
+    });
+  });
+
+  describe('getPings', () => {
+    beforeEach(() => {
+      event.payload.number = ISSUE_NUMBER;
+
+      github = {
+        issues: {
+          getComments: expect.createSpy().andReturn(Promise.resolve([
+            {
+              body: '/cc @manny',
+              user: {
+                id: PROBOT_USER_ID
+              }
+            },
+            {
+              body: '/cc @moe',
+              user: {
+                id: OTHER_USER_ID
+              }
+            },
+            {
+              body: '@jack',
+              user: {
+                id: PROBOT_USER_ID
+              }
+            },
+            {
+              body: 'jack',
+              user: {
+                id: PROBOT_USER_ID
+              }
+            }
+          ]))
+        },
+        users: {
+          get: expect.createSpy().andReturn(Promise.resolve({
+            id: PROBOT_USER_ID
+          }))
+        }
+      };
+
+      notifier = new OwnerNotifier(github, event);
+    });
+
+    it('returns only manny as having been pinged before', async () => {
+      const pings = await notifier.getPings();
+
+      expect(pings.length).toEqual(1);
+      expect(pings).toInclude('@manny');
     });
   });
 });
