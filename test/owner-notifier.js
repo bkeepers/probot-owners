@@ -95,4 +95,26 @@ describe('OwnerNotifier', () => {
       expect(changes.paths.length).toEqual(2);
     });
   });
+
+  describe('comment', () => {
+    beforeEach(() => {
+      github = {
+        issues: {
+          createComment: expect.createSpy().andReturn(Promise.resolve())
+        }
+      };
+
+      notifier = new OwnerNotifier(github, event);
+    });
+
+    it('returns successfully', async () => {
+      await notifier.comment({
+        owners: [
+          'manny',
+          'moe',
+          'jack'
+        ]
+      });
+    });
+  });
 });
