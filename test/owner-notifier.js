@@ -225,4 +225,33 @@ describe('OwnerNotifier', () => {
       expect(pings.length).toEqual(1);
     });
   });
+
+  describe('getOwnersToPing', () => {
+    beforeEach(() => {
+      event.payload.number = ISSUE_NUMBER;
+
+      github = {
+        issues: {},
+        users: {
+          get: expect.createSpy().andReturn(Promise.resolve({
+            id: PROBOT_USER_ID
+          }))
+        }
+      };
+
+      notifier = new OwnerNotifier(github, event);
+    });
+
+    it('returns only owners that have not been pinged', async () => {
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
+        createComment(PROBOT_USER_ID, '/cc @manny')
+      ]));
+
+      const pings = await notifier.getOwnersToPing(['@manny', '@moe', '@jack']);
+
+      expect(pings.length).toEqual(2);
+      expect(pings).toInclude('@moe');
+      expect(pings).toInclude('@jack');
+    });
+  });
 });
