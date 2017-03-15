@@ -137,13 +137,11 @@ describe('OwnerNotifier', () => {
     });
 
     it('returns successfully', async () => {
-      await notifier.comment({
-        owners: [
-          '@manny',
-          '@moe',
-          '@jack'
-        ]
-      });
+      await notifier.comment([
+        '@manny',
+        '@moe',
+        '@jack'
+      ]);
 
       expect(github.issues.createComment).toHaveBeenCalledWith({
         owner: 'foo',
