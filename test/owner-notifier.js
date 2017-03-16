@@ -3,11 +3,11 @@ const expect = require('expect');
 const Changes = require('../lib/changes');
 const OwnerNotifier = require('../lib/owner-notifier');
 
-function createComment(userId, body) {
+function createComment(userType, body) {
   return {
     body,
     user: {
-      id: userId
+      type: userType
     }
   };
 }
@@ -16,8 +16,6 @@ describe('OwnerNotifier', () => {
   const BASE_SHA = '1234567890abcdef1234567890abcdef12345678';
   const HEAD_SHA = '234567890abcdef1234567890abcdef123456789';
   const ISSUE_NUMBER = 42;
-  const PROBOT_USER_ID = 17;
-  const OTHER_USER_ID = 23;
 
   let event;
   let github;
@@ -160,7 +158,7 @@ describe('OwnerNotifier', () => {
         issues: {},
         users: {
           get: expect.createSpy().andReturn(Promise.resolve({
-            id: PROBOT_USER_ID
+            type: 'Bot'
           }))
         }
       };
@@ -168,9 +166,9 @@ describe('OwnerNotifier', () => {
       notifier = new OwnerNotifier(github, event);
     });
 
-    it('recognizes a properly formed comment from the PROBOT_USER_ID', async () => {
+    it('recognizes a properly formed comment from a Bot user', async () => {
       github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment(PROBOT_USER_ID, '/cc @manny')
+        createComment('Bot', '/cc @manny')
       ]));
 
       const pings = await notifier.getAlreadyPingedOwners();
@@ -179,9 +177,9 @@ describe('OwnerNotifier', () => {
       expect(pings).toInclude('@manny');
     });
 
-    it('recognizes multiple pings in a single comment from the PROBOT_USER_ID', async () => {
+    it('recognizes multiple pings in a single comment from a Bot user', async () => {
       github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment(PROBOT_USER_ID, '/cc @manny @moe @jack')
+        createComment('Bot', '/cc @manny @moe @jack')
       ]));
 
       const pings = await notifier.getAlreadyPingedOwners();
@@ -192,9 +190,9 @@ describe('OwnerNotifier', () => {
       expect(pings).toInclude('@jack');
     });
 
-    it('rejects pings from other user IDs', async () => {
+    it('rejects pings from other user types', async () => {
       github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment(OTHER_USER_ID, '/cc @manny @moe @jack')
+        createComment('User', '/cc @manny @moe @jack')
       ]));
 
       const pings = await notifier.getAlreadyPingedOwners();
@@ -204,7 +202,7 @@ describe('OwnerNotifier', () => {
 
     it('rejects pings that are not formatted correctly', async () => {
       github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment(OTHER_USER_ID, '@manny @moe @jack')
+        createComment('User', '@manny @moe @jack')
       ]));
 
       const pings = await notifier.getAlreadyPingedOwners();
@@ -214,8 +212,8 @@ describe('OwnerNotifier', () => {
 
     it('only includes one copy of any name', async () => {
       github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment(PROBOT_USER_ID, '/cc @manny @manny'),
-        createComment(PROBOT_USER_ID, '/cc @manny')
+        createComment('Bot', '/cc @manny @manny'),
+        createComment('Bot', '/cc @manny')
       ]));
 
       const pings = await notifier.getAlreadyPingedOwners();
@@ -229,12 +227,7 @@ describe('OwnerNotifier', () => {
       event.payload.number = ISSUE_NUMBER;
 
       github = {
-        issues: {},
-        users: {
-          get: expect.createSpy().andReturn(Promise.resolve({
-            id: PROBOT_USER_ID
-          }))
-        }
+        issues: {}
       };
 
       notifier = new OwnerNotifier(github, event);
@@ -242,7 +235,7 @@ describe('OwnerNotifier', () => {
 
     it('returns only owners that have not been pinged', async () => {
       github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment(PROBOT_USER_ID, '/cc @manny')
+        createComment('Bot', '/cc @manny')
       ]));
 
       const pings = await notifier.getOwnersToPing(['@manny', '@moe', '@jack']);
