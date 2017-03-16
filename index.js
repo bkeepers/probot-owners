@@ -6,7 +6,7 @@ module.exports = robot => {
     const notifier = new OwnerNotifier(github, event);
 
     return notifier.check();
-  }
+  };
 
   robot.on('pull_request.opened', notify);
   robot.on('pull_request.synchronize', notify);
