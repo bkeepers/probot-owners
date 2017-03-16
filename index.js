@@ -1,8 +1,13 @@
-const ownerNotifier = require('./lib/owner-notifier');
+const OwnerNotifier = require('./lib/owner-notifier');
 
 module.exports = robot => {
-  robot.on('pull_request', async event => {
+  const notify = async function (event) {
     const github = await robot.auth(event.payload.installation.id);
-    return ownerNotifier(github, event);
-  });
+    const notifier = new OwnerNotifier(github, event);
+
+    return notifier.check();
+  };
+
+  robot.on('pull_request.opened', notify);
+  robot.on('pull_request.synchronize', notify);
 };
