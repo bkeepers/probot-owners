@@ -10,7 +10,7 @@
   "author": "Brandon Keepers",
   "license": "ISC",
   "dependencies": {
-    "probot": "github:probot/probot",
+    "probot": "~0.2.0",
     "owners-file": "https://github.com/bkeepers/owners-node.git"
   },
   "devDependencies": {
