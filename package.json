@@ -10,13 +10,13 @@
   "author": "Brandon Keepers",
   "license": "ISC",
   "dependencies": {
-    "probot": "~0.2.0",
-    "owners-file": "https://github.com/bkeepers/owners-node.git"
+    "owners-file": "https://github.com/bkeepers/owners-node.git",
+    "probot": "^0.7.1"
   },
   "devDependencies": {
     "expect": "^1.20.2",
     "mocha": "^3.2.0",
-    "xo": "^0.16.0"
+    "xo": "^0.18.2"
   },
   "xo": {
     "esnext": true,
