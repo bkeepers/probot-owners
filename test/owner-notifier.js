@@ -51,7 +51,9 @@ describe('OwnerNotifier', () => {
       github = {
         repos: {
           getContent: expect.createSpy().andReturn(Promise.resolve({
-            content: new Buffer('@manny\n@moe\n@jack').toString('base64')
+            data: {
+              content: Buffer.from('@manny\n@moe\n@jack').toString('base64')
+            }
           }))
         }
       };
@@ -86,17 +88,21 @@ describe('OwnerNotifier', () => {
       github = {
         repos: {
           compareCommits: expect.createSpy().andReturn(Promise.resolve({
-            files: [
-              {
-                filename: 'wibble'
-              },
-              {
-                filename: 'wobble'
-              }
-            ]
+            data: {
+              files: [
+                {
+                  filename: 'wibble'
+                },
+                {
+                  filename: 'wobble'
+                }
+              ]
+            }
           })),
           getContent: expect.createSpy().andReturn(Promise.resolve({
-            content: new Buffer('manny\nmoe\njack').toString('base64')
+            data: {
+              content: Buffer.from('manny\nmoe\njack').toString('base64')
+            }
           }))
         }
       };
@@ -158,7 +164,9 @@ describe('OwnerNotifier', () => {
         issues: {},
         users: {
           get: expect.createSpy().andReturn(Promise.resolve({
-            type: 'Bot'
+            data: {
+              type: 'Bot'
+            }
           }))
         }
       };
@@ -167,9 +175,9 @@ describe('OwnerNotifier', () => {
     });
 
     it('recognizes a properly formed comment from a Bot user', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment('Bot', '/cc @manny')
-      ]));
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
+        {data: [createComment('Bot', '/cc @manny')]}
+    ));
 
       const pings = await notifier.getAlreadyPingedOwners();
 
@@ -178,9 +186,9 @@ describe('OwnerNotifier', () => {
     });
 
     it('recognizes multiple pings in a single comment from a Bot user', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment('Bot', '/cc @manny @moe @jack')
-      ]));
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
+        {data: [createComment('Bot', '/cc @manny @moe @jack')]}
+    ));
 
       const pings = await notifier.getAlreadyPingedOwners();
 
@@ -191,9 +199,9 @@ describe('OwnerNotifier', () => {
     });
 
     it('rejects pings from other user types', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment('User', '/cc @manny @moe @jack')
-      ]));
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
+        {data: [createComment('User', '/cc @manny @moe @jack')]}
+    ));
 
       const pings = await notifier.getAlreadyPingedOwners();
 
@@ -201,9 +209,9 @@ describe('OwnerNotifier', () => {
     });
 
     it('rejects pings that are not formatted correctly', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment('User', '@manny @moe @jack')
-      ]));
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
+        {data: [createComment('User', '@manny @moe @jack')]}
+    ));
 
       const pings = await notifier.getAlreadyPingedOwners();
 
@@ -211,10 +219,9 @@ describe('OwnerNotifier', () => {
     });
 
     it('only includes one copy of any name', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment('Bot', '/cc @manny @manny'),
-        createComment('Bot', '/cc @manny')
-      ]));
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
+        {data: [createComment('Bot', '/cc @manny @manny'), createComment('Bot', '/cc @manny')]}
+    ));
 
       const pings = await notifier.getAlreadyPingedOwners();
 
@@ -234,9 +241,9 @@ describe('OwnerNotifier', () => {
     });
 
     it('returns only owners that have not been pinged', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve([
-        createComment('Bot', '/cc @manny')
-      ]));
+      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
+        {data: [createComment('Bot', '/cc @manny')]}
+    ));
 
       const pings = await notifier.getOwnersToPing(['@manny', '@moe', '@jack']);
 
