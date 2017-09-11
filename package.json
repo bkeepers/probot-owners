@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "probot run ./index.js",
-    "test": "mocha && xo"
+    "test": "mocha && standard"
   },
   "author": "Brandon Keepers",
   "license": "ISC",
@@ -16,20 +16,15 @@
   "devDependencies": {
     "expect": "^1.20.2",
     "mocha": "^3.4.2",
-    "xo": "^0.18.2"
+    "standard": "^10.0.3"
   },
-  "xo": {
-    "esnext": true,
-    "space": true,
-    "envs": [
-      "node",
+  "standard": {
+    "env": [
       "mocha"
-    ],
-    "rules": {
-      "camelcase": 1
-    }
+    ]
   },
   "engines": {
-    "node": "~7.7.0"
+    "node": ">= 7.7.0",
+    "npm": ">= 4.0.0"
   }
 }
