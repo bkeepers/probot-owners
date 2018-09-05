@@ -3,15 +3,6 @@ const expect = require('expect')
 const Changes = require('../lib/changes')
 const OwnerNotifier = require('../lib/owner-notifier')
 
-function createComment (userType, body) {
-  return {
-    body,
-    user: {
-      type: userType
-    }
-  }
-}
-
 describe('OwnerNotifier', () => {
   const BASE_SHA = '1234567890abcdef1234567890abcdef12345678'
   const HEAD_SHA = '234567890abcdef1234567890abcdef123456789'
@@ -24,6 +15,9 @@ describe('OwnerNotifier', () => {
   beforeEach(() => {
     event = {
       payload: {
+        pull_request: {
+          user: { login: 'test' }
+        },
         repository: {
           name: 'bar',
           owner: {
@@ -127,13 +121,13 @@ describe('OwnerNotifier', () => {
     })
   })
 
-  describe('comment', () => {
+  describe('requestReview', () => {
     beforeEach(() => {
       event.payload.number = ISSUE_NUMBER
 
       github = {
-        issues: {
-          createComment: expect.createSpy().andReturn(Promise.resolve())
+        pullRequests: {
+          createReviewRequest: expect.createSpy().andReturn(Promise.resolve())
         }
       }
 
@@ -141,115 +135,18 @@ describe('OwnerNotifier', () => {
     })
 
     it('returns successfully', async () => {
-      await notifier.comment([
+      await notifier.requestReview([
         '@manny',
         '@moe',
         '@jack'
       ])
 
-      expect(github.issues.createComment).toHaveBeenCalledWith({
+      expect(github.pullRequests.createReviewRequest).toHaveBeenCalledWith({
         owner: 'foo',
         repo: 'bar',
         number: ISSUE_NUMBER,
-        body: '/cc @manny @moe @jack'
+        reviewers: ['manny', 'moe', 'jack']
       })
-    })
-  })
-
-  describe('getAlreadyPingedOwners', () => {
-    beforeEach(() => {
-      event.payload.number = ISSUE_NUMBER
-
-      github = {
-        issues: {},
-        users: {
-          get: expect.createSpy().andReturn(Promise.resolve({
-            data: {
-              type: 'Bot'
-            }
-          }))
-        }
-      }
-
-      notifier = new OwnerNotifier(github, event)
-    })
-
-    it('recognizes a properly formed comment from a Bot user', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
-        { data: [createComment('Bot', '/cc @manny')] }
-      ))
-
-      const pings = await notifier.getAlreadyPingedOwners()
-
-      expect(pings.length).toEqual(1)
-      expect(pings).toInclude('@manny')
-    })
-
-    it('recognizes multiple pings in a single comment from a Bot user', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
-        { data: [createComment('Bot', '/cc @manny @moe @jack')] }
-      ))
-
-      const pings = await notifier.getAlreadyPingedOwners()
-
-      expect(pings.length).toEqual(3)
-      expect(pings).toInclude('@manny')
-      expect(pings).toInclude('@moe')
-      expect(pings).toInclude('@jack')
-    })
-
-    it('rejects pings from other user types', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
-        { data: [createComment('User', '/cc @manny @moe @jack')] }
-      ))
-
-      const pings = await notifier.getAlreadyPingedOwners()
-
-      expect(pings.length).toEqual(0)
-    })
-
-    it('rejects pings that are not formatted correctly', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
-        { data: [createComment('User', '@manny @moe @jack')] }
-      ))
-
-      const pings = await notifier.getAlreadyPingedOwners()
-
-      expect(pings.length).toEqual(0)
-    })
-
-    it('only includes one copy of any name', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
-        { data: [createComment('Bot', '/cc @manny @manny'), createComment('Bot', '/cc @manny')] }
-      ))
-
-      const pings = await notifier.getAlreadyPingedOwners()
-
-      expect(pings.length).toEqual(1)
-    })
-  })
-
-  describe('getOwnersToPing', () => {
-    beforeEach(() => {
-      event.payload.number = ISSUE_NUMBER
-
-      github = {
-        issues: {}
-      }
-
-      notifier = new OwnerNotifier(github, event)
-    })
-
-    it('returns only owners that have not been pinged', async () => {
-      github.issues.getComments = expect.createSpy().andReturn(Promise.resolve(
-        { data: [createComment('Bot', '/cc @manny')] }
-      ))
-
-      const pings = await notifier.getOwnersToPing(['@manny', '@moe', '@jack'])
-
-      expect(pings.length).toEqual(2)
-      expect(pings).toInclude('@moe')
-      expect(pings).toInclude('@jack')
     })
   })
 })
